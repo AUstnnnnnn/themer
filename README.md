@@ -1,0 +1,35 @@
+# THEMER
+
+Browser-based FL Studio theme forge. Pick colors, drop a background, export a `.flstheme` zip.
+
+## Run
+
+Static site, no build step. Open `index.html` directly, or:
+
+```
+python3 -m http.server 8000
+# then open http://localhost:8000
+```
+
+## Deploy to GitHub Pages
+
+1. Push to GitHub
+2. Settings → Pages → source: `main` branch, root
+3. Done. `.nojekyll` already present.
+
+## Install a theme
+
+1. Click **export .zip**
+2. Unzip into `Documents/Image-Line/FL Studio/Settings/Themes/`
+3. Restart FL Studio
+4. Options → Theme settings → pick yours
+
+## What it generates
+
+`<ThemeName>/<themename>.flstheme` (INI text, signed BGR int colors)
+`<ThemeName>/thm<themename>.jpg` (256×256 preview)
+`<ThemeName>/bg.<ext>` (optional background image)
+
+## Stack
+
+Vanilla HTML/CSS/JS · JSZip via CDN · no build, no framework, no tracking.
