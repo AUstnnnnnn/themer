@@ -453,15 +453,70 @@ function applyHarmonyToTheme() {
   paint();
 }
 
+// mood profiles drive distinctive randomization — not just hue spin
+const MOODS = [
+  // [bgL, bgS, textL, textS, accSat, accLit, acc2Rot, schemes]
+  { id:'neon',    bgL:[4,10],   bgS:[10,25], txL:[92,98], txS:[5,15],  aS:[85,100], aL:[55,68], rot:[150,210], sch:['complementary','split'] },
+  { id:'cyber',   bgL:[6,12],   bgS:[15,30], txL:[88,96], txS:[8,20],  aS:[80,95],  aL:[50,62], rot:[170,190], sch:['complementary'] },
+  { id:'pastel',  bgL:[10,18],  bgS:[20,35], txL:[88,95], txS:[15,30], aS:[55,75],  aL:[68,80], rot:[20,60],   sch:['analogous','split'] },
+  { id:'mono',    bgL:[3,8],    bgS:[0,8],   txL:[88,96], txS:[0,10],  aS:[0,15],   aL:[70,90], rot:[0,30],    sch:['mono','analogous'] },
+  { id:'sepia',   bgL:[10,18],  bgS:[25,40], txL:[82,92], txS:[30,50], aS:[60,80],  aL:[55,68], rot:[10,40],   sch:['analogous'] },
+  { id:'blood',   bgL:[3,8],    bgS:[20,40], txL:[80,92], txS:[15,30], aS:[85,100], aL:[42,55], rot:[10,30],   sch:['analogous','mono'] },
+  { id:'gold',    bgL:[3,8],    bgS:[8,18],  txL:[88,96], txS:[15,28], aS:[60,80],  aL:[55,68], rot:[5,25],    sch:['analogous','mono'] },
+  { id:'plasma',  bgL:[6,12],   bgS:[25,45], txL:[88,96], txS:[20,40], aS:[85,100], aL:[55,65], rot:[300,340], sch:['complementary','split'] },
+  { id:'forest',  bgL:[6,12],   bgS:[20,35], txL:[85,93], txS:[15,30], aS:[55,75],  aL:[55,68], rot:[40,80],   sch:['analogous','triadic'] },
+  { id:'arcade',  bgL:[1,5],    bgS:[0,15],  txL:[85,97], txS:[60,95], aS:[90,100], aL:[55,68], rot:[120,240], sch:['triadic','tetradic'] },
+];
+const MOOD_HUE_BIAS = {
+  neon:[280,360,0,40, 160,200],   // magenta + cyan zones
+  cyber:[280,340],
+  pastel:[200,300],
+  mono:[200,260],
+  sepia:[20,45],
+  blood:[350,360,0,15],
+  gold:[35,55],
+  plasma:[5,30],
+  forest:[80,160],
+  arcade:[40,70,280,340,170,200],
+};
+let _lastRandHue = -999;
+let _lastMood = null;
+const _rand = (a,b) => a + Math.random()*(b-a);
+const _pickHueFromBias = bias => {
+  // bias is flat list of pairs: [a,b,c,d,...] each pair is a hue range
+  const pairs = [];
+  for (let i = 0; i < bias.length; i += 2) pairs.push([bias[i], bias[i+1]]);
+  const r = pairs[Math.floor(Math.random()*pairs.length)];
+  let h = _rand(r[0], r[1]) % 360;
+  // drift ≥40° from last to keep results distinctive
+  if (Math.abs(((h - _lastRandHue + 540) % 360) - 180) < 40) h = (h + 90) % 360;
+  return h;
+};
 function randomize() {
-  const baseHue = Math.floor(Math.random() * 360);
-  const sat = 60 + Math.random() * 30;
-  const lit = 55 + Math.random() * 20;
-  state.harmony.base = hslToHex({ h: baseHue, s: sat, l: lit });
-  const schemes = ['analogous', 'complementary', 'split', 'triadic', 'tetradic'];
-  state.harmony.scheme = schemes[Math.floor(Math.random() * schemes.length)];
+  // pick fresh mood (don't repeat last)
+  let m;
+  do { m = MOODS[Math.floor(Math.random()*MOODS.length)]; } while (MOODS.length > 1 && m.id === _lastMood);
+  _lastMood = m.id;
+
+  const bias = MOOD_HUE_BIAS[m.id] || [0,360];
+  const baseH = _pickHueFromBias(bias);
+  _lastRandHue = baseH;
+
+  const accent  = hslToHex({ h: baseH,                    s: _rand(...m.aS), l: _rand(...m.aL) });
+  const accent2 = hslToHex({ h: (baseH + _rand(...m.rot)) % 360, s: _rand(m.aS[0]-10, m.aS[1]), l: _rand(m.aL[0]-5, m.aL[1]+5) });
+  const bg      = hslToHex({ h: baseH, s: _rand(...m.bgS), l: _rand(...m.bgL) });
+  const text    = hslToHex({ h: baseH, s: _rand(...m.txS), l: _rand(...m.txL) });
+
+  state.anchors = { bg, text, accent, accent2 };
+  state.theme = deriveTheme(state.anchors);
+
+  // sync harmony UI so it stays sensible
+  state.harmony.base = accent;
+  state.harmony.scheme = m.sch[Math.floor(Math.random()*m.sch.length)];
   syncHarmony();
-  applyHarmonyToTheme();
+
+  els.presets.querySelectorAll('.preset').forEach(b => b.classList.remove('active'));
+  paint();
 }
 
 // -- BACKGROUND ------------------------------------------------------------
