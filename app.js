@@ -160,6 +160,42 @@ const state = {
   harmony: { base: '#7C5CFF', scheme: 'analogous', colors: [] },
 };
 
+// -- PERSIST ---------------------------------------------------------------
+
+const STORE = 'themer:v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(STORE, JSON.stringify({
+      name: state.name,
+      lightMode: state.lightMode,
+      hue: state.hue, sat: state.sat, light: state.light,
+      theme: state.theme,
+      anchors: state.anchors,
+      harmonyBase: state.harmony.base,
+      harmonyScheme: state.harmony.scheme,
+    }));
+  } catch {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    if (d.name)        state.name = d.name;
+    if (typeof d.lightMode === 'boolean') state.lightMode = d.lightMode;
+    if (typeof d.hue === 'number')   state.hue = d.hue;
+    if (typeof d.sat === 'number')   state.sat = d.sat;
+    if (typeof d.light === 'number') state.light = d.light;
+    if (d.theme)   state.theme   = { ...state.theme, ...d.theme };
+    if (d.anchors) state.anchors = d.anchors;
+    if (d.harmonyBase)   state.harmony.base   = d.harmonyBase;
+    if (d.harmonyScheme) state.harmony.scheme = d.harmonyScheme;
+    return true;
+  } catch { return false; }
+}
+
 // -- HARMONY ---------------------------------------------------------------
 
 function buildHarmony(baseHex, scheme) {
@@ -194,7 +230,7 @@ const els = {
   presets: $('presets'),
   harmonyBase: $('harmonyBase'), harmonyBaseHex: $('harmonyBaseHex'),
   schemeGrid: $('schemeGrid'), harmonyOut: $('harmonyOut'),
-  applyHarmony: $('applyHarmony'), randomize: $('randomize'),
+  randomize: $('randomize'), reset: $('resetBtn'),
   bgDrop: $('bgDrop'), bgFile: $('bgFile'), bgThumb: $('bgThumb'),
   bgMeta: $('bgMeta'), bgPick: $('bgPick'), bgClear: $('bgClear'),
   hue: $('hue'), sat: $('sat'), light: $('light'),
@@ -206,7 +242,18 @@ const els = {
   plBody: $('plBody'), mixStrips: $('mixStrips'),
   flBg: $('flBg'),
   thumbCanvas: $('thumbCanvas'),
+  toast: $('toast'),
+  flPreview: $('flPreview'),
 };
+
+function toast(msg) {
+  const t = els.toast;
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2400);
+}
 
 // -- RENDER: presets -------------------------------------------------------
 
@@ -356,6 +403,17 @@ function paint() {
     r.setProperty(`--fl-meter-${i}`, t['Meter' + i]);
     r.setProperty(`--fl-wave-${i}`,  t['WaveClr' + i]);
   }
+  // global tint sliders → preview filter (matches FL post-processing intent)
+  r.setProperty('--fl-tint-h', `${state.hue}deg`);
+  r.setProperty('--fl-tint-s', String(1 + state.sat / 128));
+  r.setProperty('--fl-tint-b', String(1 + state.light / 256));
+
+  // light mode preview class
+  els.flPreview?.classList.toggle('is-light', state.lightMode);
+
+  // hide bg-clear when no bg
+  if (els.bgClear) els.bgClear.style.display = state.background ? '' : 'none';
+
   // sync swatches
   document.querySelectorAll('.k').forEach(el => {
     const k = el.dataset.key;
@@ -368,6 +426,8 @@ function paint() {
       if (hex) hex.textContent = t[k].toUpperCase();
     }
   });
+
+  saveState();
 }
 
 // -- HARMONY UI ------------------------------------------------------------
@@ -436,7 +496,7 @@ function clearBackground() {
 
 // -- THUMBNAIL CANVAS ------------------------------------------------------
 
-function renderThumbnail() {
+async function renderThumbnail() {
   const c = els.thumbCanvas;
   const ctx = c.getContext('2d');
   const W = c.width, H = c.height;
@@ -447,7 +507,24 @@ function renderThumbnail() {
   ctx.fillRect(0, 0, W, H);
 
   if (state.background) {
-    // we have a sync issue (image isn't loaded into ctx); skip — keep solid for thumb consistency
+    await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const ar = img.width / img.height;
+        let dw = W, dh = W / ar;
+        if (dh < H) { dh = H; dw = H * ar; }
+        const dx = (W - dw) / 2, dy = (H - dh) / 2;
+        ctx.globalAlpha = 0.5;
+        ctx.drawImage(img, dx, dy, dw, dh);
+        ctx.globalAlpha = 1;
+        // scrim for legibility
+        ctx.fillStyle = t.BackColor + 'cc';
+        ctx.fillRect(0, 0, W, H);
+        resolve();
+      };
+      img.onerror = resolve;
+      img.src = state.background.dataUrl;
+    });
   }
 
   // four quadrant accent blocks
@@ -490,7 +567,7 @@ function renderThumbnail() {
   ctx.font = '10px "Inter", system-ui, sans-serif';
   ctx.fillText('THEMER · FL Studio', 16, 240);
 
-  return new Promise(resolve => c.toBlob(resolve, 'image/jpeg', 0.9));
+  return await new Promise(resolve => c.toBlob(resolve, 'image/jpeg', 0.9));
 }
 
 // -- .flstheme builder -----------------------------------------------------
@@ -563,9 +640,28 @@ async function exportZip() {
 // -- WIRING ----------------------------------------------------------------
 
 function wireTopbar() {
-  els.name.addEventListener('input', () => { state.name = els.name.value || 'Untitled Theme'; });
-  els.lightMode.addEventListener('change', () => { state.lightMode = els.lightMode.checked; });
-  els.download.addEventListener('click', () => exportZip().catch(err => alert('Export failed: ' + err.message)));
+  els.name.addEventListener('input', () => { state.name = els.name.value || 'Untitled Theme'; saveState(); });
+  els.lightMode.addEventListener('change', () => {
+    state.lightMode = els.lightMode.checked;
+    paint();
+  });
+  els.download.addEventListener('click', () => {
+    exportZip().then(() => toast('exported · check downloads'))
+               .catch(err => toast('export failed: ' + err.message));
+  });
+  els.reset?.addEventListener('click', () => {
+    state.anchors = { ...PRESETS[0] };
+    state.theme   = deriveTheme(PRESETS[0]);
+    state.hue = state.sat = state.light = 0;
+    state.lightMode = false;
+    els.lightMode.checked = false;
+    els.hue.value = 0; els.sat.value = 0; els.light.value = 0;
+    els.hueVal.textContent = '0'; els.satVal.textContent = '0'; els.lightVal.textContent = '0';
+    clearBackground();
+    els.presets.querySelectorAll('.preset').forEach((b, i) => b.classList.toggle('active', i === 0));
+    paint();
+    toast('reset');
+  });
 }
 
 function wireHarmony() {
@@ -573,22 +669,27 @@ function wireHarmony() {
     state.harmony.base = e.target.value.toUpperCase();
     syncHarmony();
   });
+  els.harmonyBase.addEventListener('change', () => applyHarmonyToTheme());
   els.harmonyBaseHex.addEventListener('input', e => {
     let v = e.target.value.trim();
     if (v[0] !== '#') v = '#' + v;
     if (/^#[0-9a-fA-F]{6}$/.test(v)) {
       state.harmony.base = v.toUpperCase();
       syncHarmony();
+      applyHarmonyToTheme();
     }
   });
   els.schemeGrid.querySelectorAll('.scheme').forEach(btn => {
     btn.addEventListener('click', () => {
       state.harmony.scheme = btn.dataset.scheme;
       syncHarmony();
+      applyHarmonyToTheme();
     });
   });
-  els.applyHarmony.addEventListener('click', applyHarmonyToTheme);
-  els.randomize.addEventListener('click', randomize);
+  els.randomize.addEventListener('click', () => {
+    randomize();
+    toast('palette randomized');
+  });
 }
 
 function wireBackground() {
@@ -616,6 +717,7 @@ function wireSliders() {
     input.addEventListener('input', () => {
       state[key] = +input.value;
       val.textContent = input.value;
+      paint();
     });
   };
   bind(els.hue,   els.hueVal,   'hue');
@@ -626,6 +728,7 @@ function wireSliders() {
 // -- BOOT ------------------------------------------------------------------
 
 function boot() {
+  const restored = loadState();
   renderPresets();
   renderAllKeys();
   renderRack();
@@ -637,6 +740,21 @@ function boot() {
   wireHarmony();
   wireBackground();
   wireSliders();
+
+  // restore UI from loaded state
+  if (restored) {
+    els.name.value         = state.name;
+    els.lightMode.checked  = state.lightMode;
+    els.hue.value          = state.hue;
+    els.sat.value          = state.sat;
+    els.light.value        = state.light;
+    els.hueVal.textContent = state.hue;
+    els.satVal.textContent = state.sat;
+    els.lightVal.textContent = state.light;
+    // deactivate any preset highlight (custom theme loaded)
+    els.presets.querySelectorAll('.preset').forEach(b => b.classList.remove('active'));
+  }
+
   paint();
 
   // animate mixer meters subtly

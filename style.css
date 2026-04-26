@@ -316,6 +316,15 @@ input, select { font: inherit; color: inherit; }
 .harmony-out span { flex: 1; }
 
 .harmony-actions { display: grid; gap: 6px; }
+.hint {
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  text-align: center;
+}
 
 /* ---- BACKGROUND DROP ----------------------------------------------------- */
 
@@ -500,6 +509,11 @@ input, select { font: inherit; color: inherit; }
   display: flex; flex-direction: column;
   font-family: "Inter", system-ui, sans-serif;
   isolation: isolate;
+  filter:
+    hue-rotate(var(--fl-tint-h, 0deg))
+    saturate(var(--fl-tint-s, 1))
+    brightness(var(--fl-tint-b, 1));
+  transition: filter 200ms ease;
 }
 .fl-bg {
   position: absolute; inset: 0;
@@ -845,6 +859,36 @@ input, select { font: inherit; color: inherit; }
 }
 
 /* ---- RESPONSIVE ---------------------------------------------------------- */
+
+/* ---- TOAST --------------------------------------------------------------- */
+
+.toast {
+  position: fixed;
+  bottom: 56px; left: 50%;
+  transform: translate(-50%, 24px);
+  background: var(--ink-0);
+  color: var(--bg-0);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 12px 40px -12px rgba(0,0,0,0.6);
+  transition: transform 320ms cubic-bezier(.2,.8,.2,1), opacity 220ms;
+}
+.toast.show {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+/* lightmode preview override */
+.fl.is-light {
+  --fl-bg: oklch(96% 0.005 75);
+}
 
 @media (max-width: 1280px) {
   .shell { grid-template-columns: 240px 1fr 280px; }

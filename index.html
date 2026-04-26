@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>THEMER — FL Studio theme forge</title>
 <meta name="description" content="Design and export beautiful FL Studio themes in your browser." />
+<meta name="theme-color" content="#1a1c22" />
+<meta property="og:title" content="THEMER · FL Studio theme forge" />
+<meta property="og:description" content="Design and export beautiful FL Studio themes in your browser. Vanilla, fast, no signup." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://austnnnnnn.github.io/themer/" />
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,700&family=Departure+Mono&display=swap" rel="stylesheet" />
@@ -34,11 +40,12 @@
   </div>
 
   <div class="topbar-end">
-    <label class="toggle">
+    <label class="toggle" title="Set Lightmode flag in exported theme. Click to flip preview surfaces too.">
       <input id="lightMode" type="checkbox" />
       <span class="toggle-track"><span class="toggle-thumb"></span></span>
       <span class="toggle-label">light mode</span>
     </label>
+    <button id="resetBtn" class="btn btn-ghost" title="Reset to first preset">reset</button>
     <button id="downloadBtn" class="btn btn-primary">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
@@ -78,9 +85,9 @@
         </div>
         <div class="harmony-out" id="harmonyOut" aria-label="harmony preview"></div>
         <div class="harmony-actions">
-          <button id="applyHarmony" class="btn btn-block">apply to theme</button>
-          <button id="randomize" class="btn btn-ghost btn-block">surprise me</button>
+          <button id="randomize" class="btn btn-block">surprise me</button>
         </div>
+        <p class="hint">scheme &amp; base color apply live</p>
       </div>
     </section>
 
@@ -211,6 +218,7 @@
 </footer>
 
 <canvas id="thumbCanvas" width="256" height="256" hidden></canvas>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 </body>
 </html>

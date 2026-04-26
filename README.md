@@ -2,6 +2,20 @@
 
 Browser-based FL Studio theme forge. Pick colors, drop a background, export a `.flstheme` zip.
 
+**Live:** https://austnnnnnn.github.io/themer/
+
+## Features
+
+- 12 hand-tuned presets (Dracula, Nord, Tokyo Night, Synthwave, Catppuccin…)
+- 6 color-harmony schemes (mono · analogous · complement · split · triadic · tetradic)
+- Live FL Studio mock — channel rack, piano roll, playlist, mixer all repaint
+- Drag-drop background image (rendered into theme + preview thumbnail)
+- Per-key fine-tune (24 keys grouped: core / grids / meters / waveform)
+- Global hue / sat / lightness post-tint
+- Light-mode flag with live preview flip
+- Auto-saves to localStorage — refresh keeps your work
+- One-click `.zip` export ready to drop into FL Studio
+
 ## Run
 
 Static site, no build step. Open `index.html` directly, or:
