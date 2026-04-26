@@ -135,17 +135,21 @@ function deriveTheme(anchors) {
 
 const PRESETS = [
   { name: 'Dracula',     bg: '#282A36', text: '#F8F8F2', accent: '#BD93F9', accent2: '#FF79C6' },
-  { name: 'Nord',        bg: '#2E3440', text: '#ECEFF4', accent: '#88C0D0', accent2: '#A3BE8C' },
-  { name: 'Tokyo Night', bg: '#1A1B26', text: '#C0CAF5', accent: '#7AA2F7', accent2: '#BB9AF7' },
+  { name: 'Cyberpunk',   bg: '#0A0E14', text: '#F0F6FC', accent: '#FF2A6D', accent2: '#05D9E8' },
+  { name: 'Hyper Light', bg: '#0F1A2E', text: '#C9F4F2', accent: '#F8367A', accent2: '#F2D74A' },
   { name: 'Synthwave',   bg: '#241B2F', text: '#FFE4F1', accent: '#F92AAD', accent2: '#36F9F6' },
-  { name: 'Gruvbox',     bg: '#282828', text: '#EBDBB2', accent: '#FE8019', accent2: '#B8BB26' },
-  { name: 'Catppuccin',  bg: '#1E1E2E', text: '#CDD6F4', accent: '#CBA6F7', accent2: '#F5C2E7' },
-  { name: 'One Dark',    bg: '#282C34', text: '#ABB2BF', accent: '#61AFEF', accent2: '#E06C75' },
-  { name: 'Mono Black',  bg: '#0E0E10', text: '#E6E6E6', accent: '#FFFFFF', accent2: '#A8A8A8' },
-  { name: 'Sunset',      bg: '#2D1B2E', text: '#FFE5C9', accent: '#FF6B6B', accent2: '#FFC15E' },
-  { name: 'Forest',      bg: '#152018', text: '#D9E5D6', accent: '#7BAE7F', accent2: '#D6B25E' },
   { name: 'Vapor',       bg: '#0F1B2D', text: '#C8D8FF', accent: '#5EE7FF', accent2: '#FF61DC' },
-  { name: 'Crimson',     bg: '#1C0E10', text: '#F4DADA', accent: '#FF3358', accent2: '#FF8A3D' },
+  { name: 'Tokyo Night', bg: '#1A1B26', text: '#C0CAF5', accent: '#7AA2F7', accent2: '#BB9AF7' },
+  { name: 'Madoka',      bg: '#14080F', text: '#FFE9F2', accent: '#FF4FA3', accent2: '#FFFFFF' },
+  { name: 'Pac-Man',     bg: '#000000', text: '#FFE600', accent: '#FFB8FF', accent2: '#00FFFF' },
+  { name: 'Toxic',       bg: '#0B0F0A', text: '#D4FFC8', accent: '#B6FF1A', accent2: '#4DFF89' },
+  { name: 'Vader',       bg: '#0A0506', text: '#F2D6D6', accent: '#E10600', accent2: '#8C1A1A' },
+  { name: 'Carbon',      bg: '#1B1B1F', text: '#C8C9CD', accent: '#FFB347', accent2: '#5B5E66' },
+  { name: 'Eye Safe',    bg: '#2A1F12', text: '#F5DCAF', accent: '#E89A3C', accent2: '#B07034' },
+  { name: 'Gold Foil',   bg: '#0E0C08', text: '#F2EAD3', accent: '#D4AF37', accent2: '#8C7A4A' },
+  { name: 'Plasma',      bg: '#160B14', text: '#FFE0CC', accent: '#FF5E1A', accent2: '#FF1E8E' },
+  { name: 'Mono Black',  bg: '#0E0E10', text: '#E6E6E6', accent: '#FFFFFF', accent2: '#A8A8A8' },
+  { name: 'Ivory',       bg: '#F5F1E8', text: '#1A1612', accent: '#C2410C', accent2: '#7C2D12' },
 ];
 
 // -- state -----------------------------------------------------------------

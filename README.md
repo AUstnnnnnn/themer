@@ -6,7 +6,7 @@ Browser-based FL Studio theme forge. Pick colors, drop a background, export a `.
 
 ## Features
 
-- 12 hand-tuned presets (Dracula, Nord, Tokyo Night, Synthwave, Catppuccin…)
+- 16 culture-driven presets (Cyberpunk, Hyper Light, Madoka, Pac-Man, Toxic, Vader, Gold Foil…)
 - 6 color-harmony schemes (mono · analogous · complement · split · triadic · tetradic)
 - Live FL Studio mock — channel rack, piano roll, playlist, mixer all repaint
 - Drag-drop background image (rendered into theme + preview thumbnail)
